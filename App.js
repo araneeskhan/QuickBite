@@ -7,6 +7,7 @@ import MainNavigator from './src/navigation/MainNavigator';
 import LoadingScreen from './src/components/LoadingScreen';
 import ErrorScreen from './src/components/ErrorBoundary';
 import {theme} from './src/theme/theme';
+import {navigationRef} from './src/navigation/NavigationService';
 
 const App = () => {
   const [isLoading, setIsLoading] = useState(true);
@@ -43,7 +44,7 @@ const App = () => {
   return (
     <SafeAreaProvider>
       <PaperProvider theme={theme}>
-        <NavigationContainer>
+        <NavigationContainer ref={navigationRef}>
           <MainNavigator initialRouteName={initialRoute} />
         </NavigationContainer>
       </PaperProvider>
