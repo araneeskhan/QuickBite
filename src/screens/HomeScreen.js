@@ -6,6 +6,8 @@ import {
   TouchableOpacity,
   StyleSheet,
   FlatList,
+  Image,
+  RefreshControl,
 } from 'react-native';
 import {useStore} from '../store/Store';
 import {COLORS, FONTFAMILY} from '../theme/theme';
@@ -15,8 +17,17 @@ import CustomIcon from '../components/CustomIcon';
 
 const HomeScreen = ({navigation}) => {
   const [searchQuery, setSearchQuery] = useState('');
+  const [refreshing, setRefreshing] = useState(false);
   const PizzaList = useStore(state => state.PizzaList);
   const BurgerList = useStore(state => state.BurgerList);
+
+  const onRefresh = React.useCallback(() => {
+    setRefreshing(true);
+    // Simulate data refresh
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 1000);
+  }, []);
 
   const renderFoodCard = ({item, type}) => (
     <TouchableOpacity
@@ -54,7 +65,12 @@ const HomeScreen = ({navigation}) => {
         style={styles.searchInput}
       />
 
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <ScrollView 
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      >
         <View style={styles.section}>
           <Text style={commonStyles.sectionTitle}>Popular Pizzas</Text>
           <FlatList
@@ -81,6 +97,7 @@ const HomeScreen = ({navigation}) => {
   );
 };
 
+// Update styles
 const styles = StyleSheet.create({
   header: {
     padding: 20,
@@ -106,6 +123,7 @@ const styles = StyleSheet.create({
   foodCard: {
     width: 160,
     marginHorizontal: 10,
+    marginVertical: 5,  // Added vertical margin
     backgroundColor: COLORS.white,
     borderRadius: 15,
     overflow: 'hidden',
@@ -118,6 +136,7 @@ const styles = StyleSheet.create({
   imageContainer: {
     height: 160,
     width: '100%',
+    backgroundColor: COLORS.light, // Added background color
   },
   foodImage: {
     height: '100%',
