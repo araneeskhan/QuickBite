@@ -1,23 +1,16 @@
 import React, {useState, useCallback} from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  FlatList,
-  TouchableOpacity,
-  Image,
-} from 'react-native';
+import {View, StyleSheet, FlatList} from 'react-native';
 import {useStore} from '../store/Store';
-import {COLORS, FONTFAMILY} from '../theme/theme';
-import CustomInput from '../components/CustomInput';
-import CustomIcon from '../components/CustomIcon';
+import {COLORS} from '../theme/theme';
 import {debounce} from 'lodash';
+import SearchBar from '../components/SearchBar';
+import FilterChips from '../components/FilterChips';
+import FoodCard from '../components/FoodCard';
+import EmptyState from '../components/EmptyState';
 
 const SearchScreen = ({navigation}) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState('all');
-  const [priceRange, setPriceRange] = useState([0, 100]);
-  
   const PizzaList = useStore(state => state.PizzaList);
   const BurgerList = useStore(state => state.BurgerList);
 
@@ -68,51 +61,35 @@ const SearchScreen = ({navigation}) => {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <CustomInput
-          placeholder="Search for food..."
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-          icon="search"
-          style={styles.searchInput}
-        />
-      </View>
+      <SearchBar
+        value={searchQuery}
+        onChangeText={setSearchQuery}
+        placeholder="Search for food..."
+      />
 
-      <View style={styles.filterContainer}>
-        <FlatList
-          data={filters}
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          renderItem={({item}) => (
-            <TouchableOpacity
-              style={[
-                styles.filterButton,
-                activeFilter === item.id && styles.activeFilter,
-              ]}
-              onPress={() => setActiveFilter(item.id)}>
-              <Text
-                style={[
-                  styles.filterText,
-                  activeFilter === item.id && styles.activeFilterText,
-                ]}>
-                {item.label}
-              </Text>
-            </TouchableOpacity>
-          )}
-          keyExtractor={item => item.id}
-          contentContainerStyle={styles.filterList}
-        />
-      </View>
+      <FilterChips
+        filters={filters}
+        activeFilter={activeFilter}
+        onFilterPress={setActiveFilter}
+      />
 
       <FlatList
         data={searchResults}
-        renderItem={renderSearchItem}
+        renderItem={({item}) => (
+          <FoodCard
+            item={item}
+            onPress={() => 
+              navigation.navigate('Details', {
+                type: item.type,
+                index: item.index,
+              })
+            }
+          />
+        )}
         keyExtractor={item => `${item.type}-${item.id}`}
         contentContainerStyle={styles.resultsList}
         ListEmptyComponent={
-          <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>No results found</Text>
-          </View>
+          <EmptyState message="No results found" />
         }
       />
     </View>
@@ -124,93 +101,8 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: COLORS.white,
   },
-  header: {
-    padding: 20,
-    backgroundColor: COLORS.white,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.light,
-  },
-  searchInput: {
-    marginBottom: 0,
-  },
-  filterContainer: {
-    paddingVertical: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.light,
-  },
-  filterList: {
-    paddingHorizontal: 20,
-    gap: 10,
-  },
-  filterButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    backgroundColor: COLORS.light,
-  },
-  activeFilter: {
-    backgroundColor: COLORS.primaryDark,
-  },
-  filterText: {
-    fontSize: 14,
-    fontFamily: FONTFAMILY.poppins_medium,
-    color: COLORS.dark,
-  },
-  activeFilterText: {
-    color: COLORS.white,
-  },
   resultsList: {
     padding: 20,
-  },
-  searchItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 15,
-    backgroundColor: COLORS.white,
-    borderRadius: 12,
-    marginBottom: 15,
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOffset: {width: 0, height: 2},
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-  },
-  itemImage: {
-    width: 70,
-    height: 70,
-    borderRadius: 10,
-  },
-  itemInfo: {
-    flex: 1,
-    marginLeft: 15,
-  },
-  itemName: {
-    fontSize: 16,
-    fontFamily: FONTFAMILY.poppins_medium,
-    color: COLORS.dark,
-  },
-  itemType: {
-    fontSize: 14,
-    fontFamily: FONTFAMILY.poppins_regular,
-    color: COLORS.grey,
-    marginTop: 4,
-  },
-  itemPrice: {
-    fontSize: 16,
-    fontFamily: FONTFAMILY.poppins_semibold,
-    color: COLORS.primaryDark,
-    marginTop: 4,
-  },
-  emptyContainer: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingTop: 50,
-  },
-  emptyText: {
-    fontSize: 16,
-    fontFamily: FONTFAMILY.poppins_medium,
-    color: COLORS.grey,
   },
 });
 
