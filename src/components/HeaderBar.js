@@ -1,73 +1,70 @@
-import {StyleSheet, Text, View} from 'react-native';
 import React from 'react';
-import {View, Text, StyleSheet, TouchableOpacity} from 'react-native';
-import {useNavigation} from '@react-navigation/native';
+import {StyleSheet, View, Text, TouchableOpacity} from 'react-native';
+import {COLORS, FONTFAMILY} from '../theme/theme';
 import CustomIcon from './CustomIcon';
-import {FONTFAMILY} from '../theme/theme';
-import ProfilePic from './ProfilePic';
 
-const HeaderBar = ({title, showBack = true, rightIcon, onRightPress}) => {
-  const navigation = useNavigation();
-
+const HeaderBar = ({
+  title,
+  leftIcon,
+  rightIcon,
+  onLeftPress,
+  onRightPress,
+  showBorder = true,
+}) => {
   return (
-    <View style={styles.container}>
-      {showBack && (
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => navigation.goBack()}>
-          <CustomIcon name="left" size={24} color="#000" />
-        </TouchableOpacity>
-      )}
-      <Text style={styles.title}>{title}</Text>
-      {rightIcon && (
-        <TouchableOpacity style={styles.rightButton} onPress={onRightPress}>
-          <CustomIcon name={rightIcon} size={24} color="#000" />
-        </TouchableOpacity>
-      )}
+    <View style={[styles.container, showBorder && styles.borderBottom]}>
+      <TouchableOpacity
+        style={styles.iconButton}
+        onPress={onLeftPress}
+        disabled={!onLeftPress}>
+        {leftIcon && (
+          <CustomIcon name={leftIcon} size={24} color={COLORS.dark} />
+        )}
+      </TouchableOpacity>
+
+      <Text style={styles.title} numberOfLines={1}>
+        {title}
+      </Text>
+
+      <TouchableOpacity
+        style={styles.iconButton}
+        onPress={onRightPress}
+        disabled={!onRightPress}>
+        {rightIcon && (
+          <CustomIcon name={rightIcon} size={24} color={COLORS.dark} />
+        )}
+      </TouchableOpacity>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
+    height: 56,
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    backgroundColor: '#fff',
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: {width: 0, height: 2},
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
+    paddingHorizontal: 8,
+    backgroundColor: COLORS.white,
   },
-  backButton: {
-    padding: 8,
+  borderBottom: {
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.light,
+  },
+  iconButton: {
+    width: 40,
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 20,
   },
   title: {
     flex: 1,
-    fontSize: 20,
+    fontSize: 18,
     fontFamily: FONTFAMILY.poppins_semibold,
-    color: '#000',
-    marginLeft: 16,
-  },
-  rightButton: {
-    padding: 8,
+    color: COLORS.dark,
+    textAlign: 'center',
+    marginHorizontal: 8,
   },
 });
 
 export default HeaderBar;
-
-const styles = StyleSheet.create({
-  headerContainer: {
-    padding: 30,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  HeaderText: {
-    fontFamily: FONTFAMILY.poppins_semibold,
-    fontSize: 20,
-    color: 'black',
-  },
-});
