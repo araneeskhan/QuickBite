@@ -1,40 +1,114 @@
 import React from 'react';
-import {View, Text, StyleSheet} from 'react-native';
+import {StyleSheet, View, Text} from 'react-native';
 import {COLORS, FONTFAMILY} from '../theme/theme';
 
-const Badge = ({text, type = 'default'}) => {
-  const getBadgeStyle = () => {
-    switch (type) {
-      case 'success':
-        return {backgroundColor: '#4CAF50', color: '#fff'};
-      case 'warning':
-        return {backgroundColor: '#FFC107', color: '#000'};
-      case 'error':
-        return {backgroundColor: '#F44336', color: '#fff'};
+const Badge = ({
+  count,
+  size = 'medium',
+  color = COLORS.primaryDark,
+  textColor = COLORS.white,
+  position,
+  children,
+}) => {
+  const getSize = () => {
+    switch (size) {
+      case 'small':
+        return {
+          minWidth: 16,
+          height: 16,
+          fontSize: 10,
+          padding: 2,
+        };
+      case 'large':
+        return {
+          minWidth: 24,
+          height: 24,
+          fontSize: 14,
+          padding: 4,
+        };
       default:
-        return {backgroundColor: COLORS.primaryLight, color: COLORS.dark};
+        return {
+          minWidth: 20,
+          height: 20,
+          fontSize: 12,
+          padding: 3,
+        };
     }
   };
 
-  const badgeStyle = getBadgeStyle();
+  const sizeStyle = getSize();
+  const isStandalone = !children;
+
+  const renderBadge = () => (
+    <View
+      style={[
+        styles.badge,
+        {
+          backgroundColor: color,
+          minWidth: sizeStyle.minWidth,
+          height: sizeStyle.height,
+          padding: sizeStyle.padding,
+        },
+      ]}>
+      <Text
+        style={[
+          styles.text,
+          {
+            color: textColor,
+            fontSize: sizeStyle.fontSize,
+          },
+        ]}>
+        {count > 99 ? '99+' : count}
+      </Text>
+    </View>
+  );
+
+  if (isStandalone) {
+    return renderBadge();
+  }
 
   return (
-    <View style={[styles.badge, {backgroundColor: badgeStyle.backgroundColor}]}>
-      <Text style={[styles.text, {color: badgeStyle.color}]}>{text}</Text>
+    <View style={styles.container}>
+      {children}
+      <View style={[styles.positionContainer, styles[position || 'topRight']]}>
+        {renderBadge()}
+      </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
+  container: {
+    position: 'relative',
+  },
+  positionContainer: {
+    position: 'absolute',
+    zIndex: 1,
+  },
   badge: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-    alignSelf: 'flex-start',
+    borderRadius: 999,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   text: {
     fontFamily: FONTFAMILY.poppins_medium,
-    fontSize: 12,
+    textAlign: 'center',
+  },
+  topLeft: {
+    top: -8,
+    left: -8,
+  },
+  topRight: {
+    top: -8,
+    right: -8,
+  },
+  bottomLeft: {
+    bottom: -8,
+    left: -8,
+  },
+  bottomRight: {
+    bottom: -8,
+    right: -8,
   },
 });
 
