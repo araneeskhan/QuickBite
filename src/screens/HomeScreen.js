@@ -19,6 +19,7 @@ import {FONTFAMILY} from '../theme/theme';
 import CustomIcon from '../components/CustomIcon';
 import PizzaCard from '../components/PizzaCard';
 import {BurgerData} from '../data/BurgerData';
+import { semanticSearch, getRecommendations } from '../utils/AIEngine';
 
 const getCategoriesFromData = (pizzaData, burgerData) => {
   let temp = {};
@@ -53,6 +54,9 @@ const HomeScreen = ({navigation}) => {
     getCategoriesFromData(PizzaList, BurgerList),
   );
 
+  const FavoritesList = useStore(state => state.FavoritesList);
+  const recommendations = getRecommendations([...PizzaList, ...BurgerList], FavoritesList);
+
   const addToCart = useStore(state => state.addToCart);
   const calculateCartPrice = useStore(state => state.calculateCartPrice);
 
@@ -71,9 +75,7 @@ const HomeScreen = ({navigation}) => {
     if (searchString !== '') {
       setCategoryIndex({index: 0, category: 'All'});
 
-      const filteredItems = getPizzaList('All', PizzaList, BurgerList).filter(
-        item => item.name.toLowerCase().includes(searchString.toLowerCase()),
-      );
+      const filteredItems = semanticSearch(searchString, getPizzaList('All', PizzaList, BurgerList));
 
       setSortedPizza(filteredItems);
     } else {
@@ -168,8 +170,45 @@ const HomeScreen = ({navigation}) => {
             <CustomIcon name="search" size={22} color="gray" />
           </TouchableOpacity>
         </View>
-        {/* Categories Text  */}
 
+        {/* AI Recommendations Section */}
+        {searchText === '' && categoryIndex.category === 'All' && recommendations.length > 0 && (
+          <View>
+            <Text style={[styles.CategoriesTitle, {marginTop: 0, marginBottom: 15, color: '#F7C762'}]}>
+              ✨ Recommended For You
+            </Text>
+            <FlatList
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              data={recommendations}
+              contentContainerStyle={styles.FlatListContainer}
+              keyExtractor={item => item.id}
+              renderItem={({item}) => (
+                <TouchableOpacity
+                  onPress={() => {
+                    navigation.push('Details', {
+                      index: item.index,
+                      id: item.id,
+                      type: item.type,
+                    });
+                  }}>
+                  <PizzaCard
+                    id={item.id}
+                    index={item.index}
+                    name={item.name}
+                    type={item.type}
+                    imagelink_square={item.imagelink_square}
+                    average_rating={item.average_rating}
+                    price={item.prices[0]}
+                    buttonPressHandler={addToCartHandler}
+                  />
+                </TouchableOpacity>
+              )}
+            />
+          </View>
+        )}
+
+        {/* Categories Text  */}
         <View>
           <Text style={styles.CategoriesTitle}>Category</Text>
         </View>
@@ -286,6 +325,14 @@ const HomeScreen = ({navigation}) => {
           />
         ) : null}
       </ScrollView>
+
+      {/* AI Vision Scanner FAB */}
+      <TouchableOpacity 
+        style={styles.ScannerFAB}
+        onPress={() => navigation.navigate('ScanScreen')}
+      >
+        <Text style={styles.ScannerText}>📷</Text>
+      </TouchableOpacity>
     </View>
   );
 };
@@ -379,4 +426,23 @@ const styles = StyleSheet.create({
     fontFamily: FONTFAMILY.poppins_extrabold,
     fontSize: 18,
   },
+  ScannerFAB: {
+    position: 'absolute',
+    bottom: 20,
+    right: 20,
+    backgroundColor: '#F7C762',
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    alignItems: 'center',
+    justifyContent: 'center',
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+  },
+  ScannerText: {
+    fontSize: 28,
+  }
 });

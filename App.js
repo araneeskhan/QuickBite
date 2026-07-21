@@ -7,6 +7,7 @@ import SignUp from './src/screens/SignUp';
 import DetailsScreen from './src/screens/DetailsScreen';
 import PaymentScreen from './src/screens/PaymentScreen';
 import OnBoarding from './src/screens/OnBoarding';
+import ScanScreen from './src/screens/ScanScreen';
 
 const Stack = createStackNavigator();
 
@@ -25,6 +26,7 @@ const App = () => (
       <Stack.Screen name="Home" component={TabNavigator} />
       <Stack.Screen name="Details" component={DetailsScreen} />
       <Stack.Screen name="Payment" component={PaymentScreen} />
+      <Stack.Screen name="ScanScreen" component={ScanScreen} />
     </Stack.Navigator>
   </NavigationContainer>
 );

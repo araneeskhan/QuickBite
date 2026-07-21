@@ -12,11 +12,19 @@ import {useBottomTabBarHeight} from '@react-navigation/bottom-tabs';
 import HeaderBar from '../components/HeaderBar';
 import Item from '../components/Items';
 import Payment from '../components/Payment';
+import PizzaCard from '../components/PizzaCard';
 import {FONTFAMILY} from '../theme/theme';
+import {predictPrepTime, getSmartCartSuggestions} from '../utils/AIEngine';
 
 const CartScreen = ({navigation, route}) => {
   const CartList = useStore(state => state.CartList);
   const CartPrice = useStore(state => state.CartPrice);
+  const PizzaList = useStore(state => state.PizzaList);
+  const BurgerList = useStore(state => state.BurgerList);
+  const addToCart = useStore(state => state.addToCart);
+
+  const prepTime = predictPrepTime(CartList);
+  const crossSells = getSmartCartSuggestions(CartList, [...PizzaList, ...BurgerList]);
   const incrementCartItemQuantity = useStore(
     state => state.incrementCartItemQuantity,
   );
@@ -30,6 +38,16 @@ const CartScreen = ({navigation, route}) => {
 
   const calculateCartPrice = useStore(state => state.calculateCartPrice);
   const tabBarHeight = useBottomTabBarHeight();
+
+  const addToCartHandler = (id, index, name, imagelink_square, type, price) => {
+    if (price && price.size) {
+      addToCart({
+        id, index, name, imagelink_square, type,
+        prices: [{...price, quantity: 1}],
+      });
+      calculateCartPrice();
+    }
+  };
 
   const incrementCartItemQuantityHandler = (id, size) => {
     incrementCartItemQuantity(id, size);
@@ -55,6 +73,11 @@ const CartScreen = ({navigation, route}) => {
               <Text style={styles.EmptyCartText}>Cart is EMPTY !!</Text>
             ) : (
               <View style={styles.ListItemContainer}>
+                {/* AI Dynamic ETA */}
+                <View style={styles.ETAContainer}>
+                  <Text style={styles.ETAText}>⚡ AI Predicted Prep Time: {prepTime} mins</Text>
+                </View>
+
                 {CartList.map(data => (
                   <TouchableOpacity
                     onPress={() => { 
@@ -80,6 +103,33 @@ const CartScreen = ({navigation, route}) => {
                     />
                   </TouchableOpacity>
                 ))}
+
+                {/* AI Frequently Bought Together */}
+                {crossSells.length > 0 && (
+                  <View style={{marginTop: 30}}>
+                    <Text style={styles.CrossSellTitle}>💡 Frequently Bought Together</Text>
+                    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{gap: 20, paddingHorizontal: 20, paddingBottom: 20}}>
+                      {crossSells.map(item => (
+                        <TouchableOpacity
+                          key={item.id}
+                          onPress={() => { 
+                            navigation.push('Details', { index: item.index, id: item.id, type: item.type });
+                          }}>
+                          <PizzaCard
+                            id={item.id}
+                            index={item.index}
+                            name={item.name}
+                            type={item.type}
+                            imagelink_square={item.imagelink_square}
+                            average_rating={item.average_rating}
+                            price={item.prices[0]}
+                            buttonPressHandler={addToCartHandler}
+                          />
+                        </TouchableOpacity>
+                      ))}
+                    </ScrollView>
+                  </View>
+                )}
               </View>
             )}
           </View>
@@ -121,10 +171,26 @@ const styles = StyleSheet.create({
     fontSize: 28,
     textAlign: 'center',
   },
-  //   ListItemContainer: {
-  //     paddingHorizontal: 20,
-  //     gap: 20,
-  //   },
+  ETAContainer: {
+    backgroundColor: '#F7C762',
+    padding: 10,
+    borderRadius: 8,
+    marginHorizontal: 20,
+    marginBottom: 15,
+    alignItems: 'center',
+  },
+  ETAText: {
+    fontFamily: FONTFAMILY.poppins_bold,
+    color: 'black',
+    fontSize: 14,
+  },
+  CrossSellTitle: {
+    fontFamily: FONTFAMILY.poppins_bold,
+    fontSize: 18,
+    color: 'black',
+    marginLeft: 20,
+    marginBottom: 10,
+  }
 });
 
 export default CartScreen;
