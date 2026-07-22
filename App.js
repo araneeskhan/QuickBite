@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {memo, useState, useEffect} from 'react';
 import {NavigationContainer} from '@react-navigation/native';
 import {createStackNavigator} from '@react-navigation/stack';
 import TabNavigator from './src/navigators/TabNavigator';
@@ -9,15 +9,25 @@ import PaymentScreen from './src/screens/PaymentScreen';
 import OnBoarding from './src/screens/OnBoarding';
 import ScanScreen from './src/screens/ScanScreen';
 
-const Stack = createStackNavigator();
+const App = () => {
+  const [isLoading, setIsLoading] = useState(true);
+  const [hasError, setHasError] = useState(false);
+  const [initialRoute, setInitialRoute] = useState('AuthFlow');
 
-const AuthFlow = () => (
-  <Stack.Navigator screenOptions={{headerShown: false}}>
-    <Stack.Screen name="OnBoarding" component={OnBoarding} />
-    <Stack.Screen name="SignUp" component={SignUp} />
-    <Stack.Screen name="SignIn" component={SignIn} />
-  </Stack.Navigator>
-);
+  const checkAuthState = async () => {
+    try {
+      setHasError(false);
+      const userToken = await AsyncStorage.getItem('userToken');
+      if (userToken) {
+        setInitialRoute('Home');
+      }
+    } catch (error) {
+      console.warn('Failed to get auth state:', error);
+      setHasError(true);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
 const App = () => (
   <NavigationContainer>
@@ -31,4 +41,23 @@ const App = () => (
   </NavigationContainer>
 );
 
-export default App;
+  if (isLoading) {
+    return <LoadingScreen />;
+  }
+
+  if (hasError) {
+    return <ErrorScreen onRetry={checkAuthState} />;
+  }
+
+  return (
+    <SafeAreaProvider>
+      <PaperProvider theme={theme}>
+        <NavigationContainer ref={navigationRef}>
+          <MainNavigator initialRouteName={initialRoute} />
+        </NavigationContainer>
+      </PaperProvider>
+    </SafeAreaProvider>
+  );
+};
+
+export default memo(App);

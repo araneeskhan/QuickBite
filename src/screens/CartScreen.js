@@ -1,11 +1,11 @@
 import React from 'react';
 import {
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
   View,
+  Text,
+  StyleSheet,
+  ScrollView,
   TouchableOpacity,
+  Image,
 } from 'react-native';
 import {useStore} from '../store/Store';
 import {useBottomTabBarHeight} from '@react-navigation/bottom-tabs';
@@ -16,7 +16,7 @@ import PizzaCard from '../components/PizzaCard';
 import {FONTFAMILY} from '../theme/theme';
 import {predictPrepTime, getSmartCartSuggestions} from '../utils/AIEngine';
 
-const CartScreen = ({navigation, route}) => {
+const CartScreen = ({navigation}) => {
   const CartList = useStore(state => state.CartList);
   const CartPrice = useStore(state => state.CartPrice);
   const PizzaList = useStore(state => state.PizzaList);
@@ -37,7 +37,7 @@ const CartScreen = ({navigation, route}) => {
   };
 
   const calculateCartPrice = useStore(state => state.calculateCartPrice);
-  const tabBarHeight = useBottomTabBarHeight();
+  const cartPrice = useStore(state => state.cartPrice);
 
   const addToCartHandler = (id, index, name, imagelink_square, type, price) => {
     if (price && price.size) {
@@ -58,7 +58,6 @@ const CartScreen = ({navigation, route}) => {
     calculateCartPrice();
   };
 
-  console.log('Cart List =', CartList.length);
   return (
     <View style={styles.ScreenContainer}>
       <StatusBar backgroundColor={'white'} />
@@ -134,41 +133,100 @@ const CartScreen = ({navigation, route}) => {
             )}
           </View>
 
-          {CartList.length != 0 ? (
-            <Payment
-              buttonPressHandler={buttonPressHandler}
-              buttonTitle="Pay"
-              price={{price: CartPrice, currency: 'Rs. '}}
-            />
-          ) : (
-            <></>
-          )}
-        </View>
+      <ScrollView style={styles.cartList}>
+        {CartList.map(renderCartItem)}
       </ScrollView>
+
+      <View style={styles.footer}>
+        <View style={styles.priceContainer}>
+          <Text style={styles.priceLabel}>Total Amount</Text>
+          <Text style={styles.priceValue}>${cartPrice.toFixed(2)}</Text>
+        </View>
+
+        <TouchableOpacity 
+          style={styles.checkoutButton}
+          onPress={() => navigation.navigate('Checkout')}>
+          <Text style={styles.checkoutButtonText}>Proceed to Checkout</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  ScreenContainer: {
+  container: {
     flex: 1,
-    backgroundColor: 'white',
+    backgroundColor: COLORS.white,
   },
-  ScrollViewFlex: {
-    flexGrow: 1,
+  header: {
+    padding: 20,
+    backgroundColor: COLORS.white,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.light,
   },
-  ScrollViewInnerView: {
+  headerTitle: {
+    fontSize: 24,
+    fontFamily: FONTFAMILY.poppins_semibold,
+    color: COLORS.dark,
+  },
+  cartList: {
     flex: 1,
-    justifyContent: 'space-between',
   },
-  ItemContainer: {
+  cartItem: {
+    flexDirection: 'row',
+    padding: 15,
+    backgroundColor: COLORS.white,
+    marginHorizontal: 20,
+    marginVertical: 8,
+    borderRadius: 15,
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+  },
+  itemImage: {
+    width: 80,
+    height: 80,
+    borderRadius: 10,
+  },
+  itemInfo: {
     flex: 1,
+    marginLeft: 15,
+    justifyContent: 'center',
   },
-  EmptyCartText: {
-    marginVertical: 350,
-    color: 'black',
-    fontFamily: FONTFAMILY.poppins_bold,
-    fontSize: 28,
+  itemName: {
+    fontSize: 16,
+    fontFamily: FONTFAMILY.poppins_medium,
+    color: COLORS.dark,
+  },
+  itemSize: {
+    fontSize: 14,
+    fontFamily: FONTFAMILY.poppins_regular,
+    color: COLORS.grey,
+    marginTop: 4,
+  },
+  itemPrice: {
+    fontSize: 16,
+    fontFamily: FONTFAMILY.poppins_semibold,
+    color: COLORS.primaryDark,
+    marginTop: 4,
+  },
+  quantityControls: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  quantityButton: {
+    padding: 8,
+    backgroundColor: COLORS.light,
+    borderRadius: 8,
+  },
+  quantityText: {
+    fontSize: 16,
+    fontFamily: FONTFAMILY.poppins_medium,
+    color: COLORS.dark,
+    minWidth: 24,
     textAlign: 'center',
   },
   ETAContainer: {
